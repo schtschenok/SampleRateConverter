@@ -40,30 +40,10 @@ extern "C" {
 #define M_PI 3.14159265358979323846
 #endif
 
-typedef enum {
-    FIR_LOWPASS,
-    FIR_HIGHPASS,
-    FIR_BANDPASS,
-    FIR_BANDSTOP
-} FIR_Response;
+float* src_generate_fir_coeffs(int num_taps);
+float* src_generate_fir_filter(float* coefficients, int num_taps);
 
-typedef struct {
-    float* pfb;
-    int num_phases;
-    int taps_per_phase;
-    int interpolation;
-    int decimation;
-    int phase_index;
-    int input_deficit;
-    float* history;
-    int history_length;
-} FIR_Filter;
-
-float* src_generate_fir_coeffs(int num_taps, float cutoff);
-FIR_Filter* src_generate_fir_filter(float* coefficients, int num_taps,
-        int interpolation, int decimation);
-FIR_Filter* src_generate(int interpolation, int decimation);
-int src_filt(FIR_Filter* filter, float* samples, int count, float* p_output);
+void src_filt(int num_taps, float* pfb, float* input, int count, float* output);
 
 #ifdef __cplusplus
 }

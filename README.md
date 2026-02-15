@@ -1,3 +1,9 @@
+# Fork that strips the original project down to a simple 4x upsampler removing almost 2/3 of the code.
+
+Includes LLM-generated main.c and CMakeLists.txt, and manually-devoured src.c and src.h
+
+The OG readme goes here:
+
 # Sample Rate Converter
 
 This is a C implementation of an audio sample rate convertor based on Polyphase FIR filter. It can be used to up or downconverting the sample rate of a raw audio stream with any fractional ratio. However this may not suitable as an arbitrary resampler as memory space consumption goes up linearly as the numerator of the ratio goes up. The stream should be in de-interleaved 32bit float format. The filter is stateful, capable of processing audio stream with arbitrary block size. The code does not depend on libraries other than standard math library (-lm). The state is decoupled from the algorithm, allowing code re-entrant and multi-instancing.

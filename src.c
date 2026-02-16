@@ -63,29 +63,36 @@ float* src_generate_fir_filter(float* coefficients, int num_taps) {
 
 // RUNTIME
 
-float dot(float* coeffs, int len, float* samples, int end_index) {
-    float dotprod = 0.0f;
-
-    int start_i = 0;
-    if (end_index < len - 1) {
-        start_i = len - 1 - end_index;
-    }
-
-    for (int i = start_i; i < len; i++) {
-        int sample_idx = end_index - len + 1 + i;
-        dotprod += coeffs[i] * samples[sample_idx];
-    }
-    return dotprod;
-}
-
 void src_filt(int num_taps, float* pfb, float* input, int count, float* output) {
     const int taps_per_phase = (num_taps + 3) / 4;
     int out_idx = 0;
+    int i = 0;
 
-    for (int i = 0; i < count; i++) {
-        for (int phase = 0; phase < 4; phase++) {
+    int startup_limit = (count < taps_per_phase - 1) ? count : (taps_per_phase - 1);
+
+    for (; i < startup_limit; i++) {
+        int start_tap = taps_per_phase - 1 - i;
+        for (int phase = 0; phase < 4; phase++) { // Unrollable
             float* current_coeffs = &pfb[phase * taps_per_phase];
-            output[out_idx++] = dot(current_coeffs, taps_per_phase, input, i);
+            float dotprod = 0.0f;
+            for (int tap = start_tap; tap < taps_per_phase; tap++) {
+                int sample_idx = i - taps_per_phase + 1 + tap;
+                dotprod += current_coeffs[tap] * input[sample_idx];
+            }
+            output[out_idx++] = dotprod;
+        }
+    }
+
+    for (; i < count; i++) {
+        for (int phase = 0; phase < 4; phase++) { // Unrollable
+            float* current_coeffs = &pfb[phase * taps_per_phase];
+            float dotprod = 0.0f;
+
+            for (int tap = 0; tap < taps_per_phase; tap++) { // Unrollable
+                int sample_idx = i - taps_per_phase + 1 + tap;
+                dotprod += current_coeffs[tap] * input[sample_idx];
+            }
+            output[out_idx++] = dotprod;
         }
     }
 }
